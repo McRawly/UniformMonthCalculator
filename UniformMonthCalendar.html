@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<!-- based on https://craftedcart.github.io/GormanCal.html -->
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<title>Uniform Month Calendar</title>
+
+	<!-- Bootstrap -->
+	<link href="./UniformMonthCalendar_files/bootstrap.min.css" rel="stylesheet">
+	<!-- CraftedCart StyleSheet -->
+	<link rel="stylesheet" type="text/css" href="./UniformMonthCalendar_files/CCStyle.css">
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+	<script src="./UniformMonthCalendar_files/jquery-1.11.3.min.js"></script>
+</head>
+
+<body>
+
+	<div class="m-scene" id="main">
+
+		<div class="container scene_element scene_element--fadeinup"><!-- fluid-container-->
+			<!-- Page Header -->
+			<div class="fluid-container"><!-- fluid-container-->
+				<div class="jumbotron gorCal-jumbotron">
+						<h1>Uniform Month Calendar Converter</h1>
+						<h3>Convert from Gregorian dates to 13-Month Calendar dates</h3>
+				</div>
+			</div>
+
+			<!-- Input a Gregorian Date -->
+			<div class="fluid-container"><!-- fluid-container-->
+				<div class="container panel panel-default grePanel">
+					<h2 class="text-center">Enter a Gregorian Calendar Date</h2>
+					<!-- Calendar UI -->
+					<!-- <div class="container"> -->
+						<div class="row text-center"><!-- centering here works -->
+							<button type="button" id="btnYesterday" class="btn btn-default" onclick="yesterday()">Subtract a Day</button>
+							<input type="date" id="birthdate" placeholder="Select Gregorian date" onchange="gregToUni()">
+							<button type="button" id="btnTomorrow" class="btn btn-default" onclick="tomorrow()">Add a Day</button>
+						</div>
+					<!-- </div> -->
+					<!-- Calculate Button -->
+					<!-- <div class="container"> -->
+						<div class="row text-center">
+							<div class="col-sm-4 col-4"></div>
+							<div class="col-sm-4 col-4">
+								<button type="button" class="btn btn-primary col-sm-12 col-12"
+									onclick="gregToUni()">Calculate</button>
+							</div>
+							<div class="col-sm-4 col-4"></div>
+						</div>
+					<!-- </div> -->
+					
+					<!-- Calendar Style Readouts -->
+					<div class="row text-center">
+						<div class="container col-sm-6 col-6">
+							<table class="table" id="gregCalendar">
+								<h3>Gregorian Calendar</h3>
+								<h4><span id="resultInputString">WWW mmm dd yyyy</span></h4>
+								<tr>
+									<th class="info">Wk</th>
+									<th>Su</th>
+									<th>M</th>
+									<th>Tu</th>
+									<th>W</th>
+									<th>Th</th>
+									<th>Fr</th>
+									<th>Sa</th>
+								</tr>
+							</table>
+						</div>
+						<div class="container col-sm-6 col-6">
+							<h3>13-Month Calendar</h3>
+							<h4><span id="resultOutputString">WWW, month d, yyyy</span></h4>
+							<table class="table" id="uniCalendar" >
+								<tr>
+									<th class="info">Wk</th>
+									<th>Su</th>
+									<th>M</th>
+									<th>Tu</th>
+									<th>W</th>
+									<th>Th</th>
+									<th>Fr</th>
+									<th>Sa</th>
+								</tr>
+							</table>
+						</div>
+						<script>
+							let table1 = document.getElementById("gregCalendar");
+							let table2 = document.getElementById("uniCalendar");
+							const spread = 4;
+							const numRows = 1 + 2 * spread;
+							const numCols = 8;
+							let newInner = "";
+							for (let i = 0; i < numRows; i++) {
+								newInner += "<tr>";
+								newInner += "<td class=\"info\">#</td>";
+								for (let j = 1; j < numCols; j++) {
+									newInner += "<td>#</td>";
+								}
+								newInner += "</tr>";
+							}
+							table1.innerHTML += newInner;
+							table2.innerHTML += newInner;
+						</script>
+					</div>
+
+				</div>
+			</div>
+
+			<!-- Output -->
+			<div class="fluid-container"><!-- fluid-container-->
+				<div class="container panel panel-default grePanel">
+					<!-- Readouts Header -->
+					<h2>Uniform Month Calendar Date Readouts
+						<button class="btn btn-info" type="button" data-toggle="collapse" 
+							data-target="#collapseOutputReadouts" aria-expanded="false" 
+							aria-controls="collapseOutputReadouts">[+] Expand</button>
+					</h2>
+					<!-- Collapsable Wrapper -->
+					<div class="collapse" id="collapseOutputReadouts">
+						<!-- Output Paramater Readouts -->
+						<div class="container">
+							<table class="table" id="outputTable">
+								<tr>
+									<td>Uniform Date</td>
+									<td>Year</td>
+									<td>Month</td>
+									<td>Day</td>
+									<td>Weekday</td>
+									<td>Day of Year</td>
+									<td>Week #</td>
+								</tr>
+								<tr>
+									<td><b><span class="badge2" id="outDateString">Unknown</span></b></td>
+									<td><span class="badge2" id="outYear">1900</span></td>
+									<td><span class="badge2" id="outMonth">12 (February)</span></td>
+									<td><span class="badge2" id="outDay">23</span></td>
+									<td><span class="badge2" id="outWeekday">Friday</span></td>
+									<td><span class="badge2" id="outDayOfYear">331</span></td>
+									<td><span class="badge2" id="outWeekNum">331</span></td>
+								</tr>
+							</table>
+						</div>
+						<!-- Input Paramater Readouts -->
+						<div class="container">
+							<table class="table" id="inputTable">
+								<tr>
+									<td>Gregorian Date</td>
+									<td>Leap Year</td>
+									<td>Days Lost on Adoption</td>
+									<td>Leap Day (if LY)</td>
+									<td>New Month Names</td>
+								</tr>
+								<tr>
+									<td><b><span class="badge2" id="inDateString">Unknown</span></b></td>
+									<td><span class="badge2" id="inLeapYear">No</span></td>
+									<td><span class="badge2" id="inDaysLost">1900</span></td>
+									<td><span class="badge2" id="inLeapDay">12 (February)</span></td>
+									<td><span class="badge2" id="inMonthNames">23</span></td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Calendar Settings [Note: Collapse Commented Out due to not rendering correctly) -->
+			<div class="fluid-container"><!-- fluid-container-->
+				<div class="container panel panel-default grePanel">
+					<h2>Uniform Month Calendar Settings
+						<!-- <button class="btn btn-info" type="button" data-toggle="collapse" 
+							data-target="#collapseCalendarSettings" aria-expanded="false" 
+							aria-controls="collapseCalendarSettings">[-] Collapse</button> -->
+					</h2>
+					<!-- <div class="collapse show" id="collapseCalendarSettings"> -->
+						<!--- Calendar Start -->
+						<p> * = Preferred Selection</p>
+						<div class="input-group">
+							<span class="input-group-addon" id="basic-addon1">New Calendar Starts On: </span>
+							<select id="calendarStart" class="form-control" onChange="updateCalendarStart()">
+								<option value="10" selected>Winter Solstice previous Gregorian Year (10 Days earlier)*</option>
+								<option value="0">Same Day as Gregorian Calendar (No Shift in Start)</option>
+							</select>
+						</div>
+						<!--- Calendar Sol Day -->
+						<div class="input-group">
+							<span class="input-group-addon" id="basic-addon1">Leap Day Added: </span>
+							<select id="leapDayLocation" class="form-control" onChange="updateLeapDay()">
+								<option value="0">On Summer Solstice (Day Calculated)</option>
+								<option value="183" selected>On Mid-Year (Day 183)*</option>
+								<option value="366">After Year Day (End of the Year)</option>
+							</select>
+						</div>
+						<!--- Name of Free Day at End of Year -->
+						<div class="input-group">
+							<span class="input-group-addon" id="basic-addon1">Name of the Free Day at the end of year: </span>
+							<select id="yearDayName" class="form-control" onChange="updateYearDayName()">
+								<option value="Free Day">Free Day</option>
+								<option value="Year Day" selected>Year Day*</option>
+								<option value="Intermission">Intermission</option>
+							</select>
+						</div>
+						<!--- Month Names Selector -->
+						<div class="input-group">
+							<span class="input-group-addon" id="basic-addon1">Names of the New Calendar Months: </span>
+							<select id="monthNamesChoice" class="form-control" onChange="updateCalendarNames()">
+							</select>
+						</div>
+						<!--- Month Names Table -->
+						<div class="container">
+							<table class="table" id="monthNamesTable">
+							</table>
+						</div>
+					<!-- </div> -->
+				</div>
+			</div>
+
+
+			<!-- 2016-2020 Test Table -->
+			<div class="fluid-container"><!-- fluid-container-->
+				<div class="container panel panel-default grePanel">
+					<!-- Header for Test Table -->
+					<h2>2016-2020 CE to Uniform Month</h2>
+					<p>1582 CE Gregorian Calendar Adopted
+						<br>46 BCE the Julian Year Adopted
+						<br>in the 6th century BCE (600-500 BCE) Jews started keeping track of years
+					</p>
+					<!-- Buttons: Print, Expand -->
+					<button type="button" class="btn btn-default " onclick="testTable()" id="printTable">Write Table</button>
+					<button class="btn btn-info" type="button" data-toggle="collapse" 
+						data-target="#collapseTestTable" aria-expanded="false" 
+						aria-controls="collapseTestTable">[+] Expand</button>
+					<!-- Test Table (in collapse div) -->
+					<div class="collapse" id="collapseTestTable">
+						<table class="table" id="testTable">
+							<tr>
+								<th>Old Date String</th>
+								<th>UY Day</th>
+								<th>New Date String</th>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<!-- About -->
+			<div class="fluid-container"><!-- fluid-container-->
+				<div class="container panel panel-default grePanel">
+					<h2>Gormanian, what's that?</h2>
+					<p>I'm going to guess that you don't watch Dave Gorman Modern Life is Goodish then.
+						The Gormanian calendar is a idea from <a href="https://www.youtube.com/watch?v=dHXz-UD8I4g">Series 3 Episode 7</a> of the Goodish show.
+						We know how many seconds are in a minute, how many minutes are in an hour,
+						how many hours are in a day, how many days there are in a week,
+						how many months there are in a year, but we don't know how many days or weeks there
+						are in a month. It changes each month. The Gormanian calendar solves this issue by
+						making each month 28 days long, as well as by adding another month and an intermission.
+						This calendar also renames and moves some months. (OCTober is the 10th month, not the
+						8th?)
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="./UniformMonthCalendar_files/bootstrap.min.js"></script>
+		<script src="./UniformMonthCalendar_files/jquery.smoothState.js"></script>
+		<script src="./UniformMonthCalendar_files/transitionPage.js"></script>
+		<script src="./UniformMonthCalendar_files/uniformConvert.js"></script>
+		<script src="./UniformMonthCalendar_files/UniformMonth.js"></script>
+		<script src="./UniformMonthCalendar_files/testTable.js"></script>
+		<script type="text/javascript">setupPage();</script>
+
+	</div>
+
+
+</body>
+
+</html>

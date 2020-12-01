@@ -1,0 +1,98 @@
+/*
+ * Keyframes
+ */
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeInRight {
+  0% {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * CSS Page Transitions
+ * Don't forget to add vendor prefixes!
+ */
+/** Basic styles for an animated element */
+.m-scene .scene_element {
+  animation-duration: 0.25s;
+  transition-timing-function: ease-in;
+  animation-fill-mode: both;
+}
+
+/** An element that fades in and slides up */
+.m-scene .scene_element--fadeinup {
+  animation-name: fadeInUp;
+}
+
+/** An element that fades in and slides from the right */
+.m-scene .scene_element--fadeinright {
+  animation-name: fadeInRight;
+}
+
+.is-exiting .scene_element {
+  animation-direction: reverse;
+  overflow: hidden;
+}
+
+/*
+ * Main Styling
+ */
+
+.gorCal-jumbotron, .home-jumbotron {
+	background-color: #2196F3;
+	color: #FAFAFA;
+}
+
+.jumbotron {
+	box-shadow: #212121 0 0 8px;
+}
+
+.grePanel {
+	padding-bottom: 12px;
+}
+
+.grePanel div {
+	margin-bottom: 12px;
+}
+
+.lSpacing {
+	margin-left: 12px;
+}
+
+.rSpacing {
+	margin-right: 12px;
+}
+
+.bg-green {
+	background-color: #4CAF50;
+}
+
+.loader {
+  margin: auto;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  background-color: #9C27B0;
+  color: #FFFFFF;
+  z-index: 9001;
+  opacity: 0.5;
+}
