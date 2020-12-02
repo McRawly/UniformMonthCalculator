@@ -26,7 +26,7 @@ function gregToUni () {
     // Format Output String
     let wkDayStr = UniformMonth.newWeekdays[uniWeekday - 1];
     let monthStr = UniformMonth.newMonthNames[uniMonth - 1];
-	outDateString = `${wkDayStr}, ${monthStr} ${uniDay}, ${uniYear}`;
+	let outDateString = `${wkDayStr}, ${monthStr} ${uniDay}, ${uniYear}`;
 
 	/* ----------  Update DOM Elements  ------- */
 

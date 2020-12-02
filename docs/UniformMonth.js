@@ -400,7 +400,7 @@ class UniformMonth {
         //  2) Leap Day is (~, day) === (~, 0)
 
         // Get Leap Year Info
-        inLeapYear = UniformMonth.isGregorianLeapYear(year);
+        let inLeapYear = UniformMonth.isGregorianLeapYear(year);
 
         // Convert to day of the Uniform Year
         let uniYearDay = 28 * (month - 1) + day; // 14, 1 ==> 365
