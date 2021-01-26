@@ -12,13 +12,16 @@ function createEmptyCalendars() {
   /* 
     Replaces existing <table> components #gregCalendar and #uniCalendar
     with a default table. Number of rows is store in the |spread| var.
+    NOTE: there are two <tbody> children, first is header row, second
+    is the data rows. Keep in this format to make [r][c] convention easier
+    in the populate***Calendar() functions.
   */
   let table1 = document.getElementById("gregCalendar");
   let table2 = document.getElementById("uniCalendar");
   const spread = 3; //26; // change to input
   const numRows = 1 + 2 * spread;
   const numCols = 8;
-  let newInner = `<tr>
+  let newInner = `<tbody><tr>
                     <th class="info">Wk</th>
                     <th>Su</th>
                     <th>M</th>
@@ -27,7 +30,7 @@ function createEmptyCalendars() {
                     <th>Th</th>
                     <th>Fr</th>
                     <th>Sa</th>
-                  </tr>`;
+                  </tr></tbody><tbody>`;
   for (let i = 0; i < numRows; i++) {
     newInner += "<tr>";
     newInner += "<td class=\"info\">#</td>";
