@@ -2,7 +2,43 @@
 
 const debugOn = false;
 
-// class UniformMonth {};
+// Calendar Cell Colors
+const holidayColor = "text-danger bg-warning"; // overridden by class="info"
+const holidayWeight = "font-weight-bold"; // always not used
+const normalColor = "text-dark bg-white"; // overridden by class="info"
+const normalWeight = "font-weight-normal";
+
+function createEmptyCalendars() {
+	/* 
+		Replaces existing <table> components #gregCalendar and #uniCalendar
+		with a default table. Number of rows is store in the |spread| var.
+	*/
+	let table1 = document.getElementById("gregCalendar");
+	let table2 = document.getElementById("uniCalendar");
+	const spread = 3; //26; // change to input
+	const numRows = 1 + 2 * spread;
+	const numCols = 8;
+	let newInner = `<tr>
+										<th class="info">Wk</th>
+										<th>Su</th>
+										<th>M</th>
+										<th>Tu</th>
+										<th>W</th>
+										<th>Th</th>
+										<th>Fr</th>
+										<th>Sa</th>
+									</tr>`;
+	for (let i = 0; i < numRows; i++) {
+		newInner += "<tr>";
+		newInner += "<td class=\"info\">#</td>";
+		for (let j = 1; j < numCols; j++) {
+			newInner += "<td>#</td>";
+		}
+		newInner += "</tr>";
+	}
+	table1.innerHTML = newInner;
+	table2.innerHTML = newInner;
+}
 
 /* -------------------------------------------------------------------
    ----------  Gregorian Date to Uniform Month Date Converter  -------
@@ -62,7 +98,7 @@ function gregToUni () {
 
 // Returns the ISO week of the date.
 // Source: https://weeknumber.net/how-to/javascript
-function getWeek(date) {
+function getIsoWeek(date) {
     date.setHours(0, 0, 0, 0);
     // Thursday in current week decides the year.
     date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
@@ -71,6 +107,8 @@ function getWeek(date) {
     // Adjust to Thursday in week 1 and count number of weeks from date to week1.
     return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
 }
+
+
 
 function populateGregorianCalendar(year, month, day) {
 	// Grab Table DOMs
@@ -86,6 +124,7 @@ function populateGregorianCalendar(year, month, day) {
         gregDOMs[r][0].className = "info";
         for (let c = 1; c < numCols; c++) {
             gregDOMs[r][c].className = "default";
+			gregDOMs[r][c].addEventListener("click", clickCalendar);
             if (c === 1 || c === 7) {
                 gregDOMs[r][c].className = "active";
             }
@@ -95,7 +134,7 @@ function populateGregorianCalendar(year, month, day) {
     // Convert to DATE object for Weekday and Week #
     let gregDate = new Date(year, month - 1, day);
     let weekday = gregDate.getDay() + 1; // starts [0-6] now [1-7]
-    let weekNum = getWeek(gregDate); // [1-53]
+    let weekNum = getIsoWeek(gregDate); // [1-53]
     col = weekday;
 
     // Store "Start Values" for when we iterate backwards
@@ -105,22 +144,28 @@ function populateGregorianCalendar(year, month, day) {
     let startMonth = month;
     let startDay = day;
     
-    // Update Highlight Date first
-	gregDOMs[row][col].className = "success";
-    gregDOMs[row][0].innerHTML = weekNum;
-    
-    // Insert Numbers FORWARD
+    //  ----------------- Insert Numbers FORWARD ---------------------
 	while (row < numRows) {
         
         gregDate = new Date(year, month - 1, day);
         weekday = gregDate.getDay() + 1; // starts [0-6] now [1-7]
-        weekNum = getWeek(gregDate); // [1-53]
+        weekNum = getIsoWeek(gregDate); // [1-53]
 
-        // Set Values
-        if (col == 1) {
+        // Set Values (update week on Thursdays according ISO standard.)
+        if (col === 5) {
             gregDOMs[row][0].innerHTML = weekNum;
         }
-        gregDOMs[row][col].innerHTML = day;
+		gregDOMs[row][col].innerHTML = day;
+
+		// Store onclick values
+		gregDOMs[row][col].dataDate = `greg,${year},${month},${day}`;
+
+		// Assign Color (for holidays)
+		if (isHoliday("greg", year, month, day)) {
+			gregDOMs[row][col].className = "default " + holidayColor + " " + holidayWeight;
+		}
+		
+		// Increment Pointer
         col += 1;
         if (col > 7) {
             col = 1;
@@ -132,24 +177,33 @@ function populateGregorianCalendar(year, month, day) {
             UniformMonth.addGregorianDay(year, month, day, 1);
     }
     
-    // Insert Numbers BACKWARD
+    //  ----------------- Insert Numbers BACKWARD ---------------------
     row = startRow;
     col = startCol;
     year = startYear;
     month = startMonth;
     day = startDay;
-
 	while (row >= 0) { 
         // Use Date Class
         gregDate = new Date(year, month - 1, day);
         weekday = gregDate.getDay() + 1; // starts [0-6] now [1-7]
-        weekNum = getWeek(gregDate); // [1-53]
+        weekNum = getIsoWeek(gregDate); // [1-53]
 
         // Set Values
-        if (col == 7) {
+        if (col === 5) {
             gregDOMs[row][0].innerHTML = weekNum;
         }
         gregDOMs[row][col].innerHTML = day;
+		
+		// Store onclick values
+		gregDOMs[row][col].dataDate = `greg,${year},${month},${day}`;
+
+		// Assign Color (for holidays)
+		if (isHoliday("greg", year, month, day)) {
+			gregDOMs[row][col].className = "default " + holidayColor + " " + holidayWeight;
+		}
+		
+		// Decrement Pointer
         col -= 1;
         if (col === 0) {
             col = 7;
@@ -159,88 +213,77 @@ function populateGregorianCalendar(year, month, day) {
         // Decrement Day
         var {year, month, day} =
             UniformMonth.subtractGregorianDay(year, month, day, 1);       
-    }
+	}
+	
+    // Update Highlight Date Last
+	gregDOMs[startRow][startCol].className = "success";
 
 }
 
-function populateUniformCalendar(uniYear, uniMonth, uniDay, uniWeekday, uniWeekNum, dayOfUniYear) {
+function populateUniformCalendar(uniYear, uniMonth, uniDay, uniWeekday, uniWeekNum, uniDayNum) {
+    const pieceWiseLeap =  "-LEAPDAY";
+    const pieceWiseYear =  "-YEARDAY";
 	// Grab Table DOMs
 	var {gregDOMs, uniDOMs} = getCalendarDoms();
 	let numRows = uniDOMs.length; // data rows only, should be odd
 	let numCols = 8; // includes Weeknum as first element
 	let midRow = (numRows - 1) / 2; // should be even index
 	let row = midRow; // store where to insert
-    let col = uniWeekday; // store where to insert
+    let col = uniWeekday; // store where to insert [1-7,8-9]
     
     // Reset classes
     for (let r = 0; r < numRows; r++) {
         uniDOMs[r][0].className = "info";
         for (let c = 1; c < numCols; c++) {
-            uniDOMs[r][c].className = "default";
+			uniDOMs[r][c].className = "default";
+			uniDOMs[r][c].addEventListener("click", clickCalendar);
             if (c === 1 || c === 7) {
                 uniDOMs[r][c].className = "active";
             }
         }
     }
 
-    /* --------- Update Uniform Month Calendar --------- */
-
     // Store "Start Values" for when we iterate backwards
     let startRow = row;
-    let startCol = col;
-    let startUniDayNum = dayOfUniYear;
+    let startCol = col; // 1-7, 8 for leap day 9 for year day
+    let startUniDayNum = uniDayNum;
     let startUniYear = uniYear;
-    const pieceWiseLeap =  "-LEAPDAY"
-    const pieceWiseYear =  "-YEARDAY"
-    
-    // Update Highlight Date first
-	if (uniMonth == 14 || uniDay == 0) {
-		let pieceWise = pieceWiseLeap;
-		if (uniMonth == 14) {
-			pieceWise = pieceWiseYear;
-		}
-		// Print Piece-wise Message as entire row
-		for (let c = 0; c < pieceWise.length; c++) {
-            uniDOMs[row][c].text = pieceWise[c];
-            if (c > 0) {
-                uniDOMs[row][c].className = "success";
-            }
-		}
-        // Store next insert point.
-        startRow = row-1;
-        startCol = 7;
-	} else {
-        // Highlight
-        startRow = row;
-        startCol = col-1;
-        if (startCol === 0) {
-            startRow -= 1;
-            startCol = 7;
-        }
-        uniDOMs[row][col].className = "success";
-        uniDOMs[row][0].innerHTML = uniWeekNum; // set week number too
-    }
-    
-    // Insert Numbers FORWARD
+	var {uniYear, uniMonth, uniDay} = UniformMonth.uniformDateFromUniYearDay(uniDayNum, uniYear);
+        
+    //  ----------------- Insert Numbers FORWARD ---------------------
 	while (row < numRows) {
-        // On First Column, set Weeknum OR make whole week special
         if (uniMonth == 14 || uniDay == 0) {
+			// Free Day: Determine which string to print
             let pieceWise = pieceWiseLeap;
-            if (uniMonth == 14) {
+            if (uniMonth == 14 && uniDay == 1) {
                 pieceWise = pieceWiseYear;
             }
             // Print Piece-wise Message as entire row
             for (let c = 0; c < pieceWise.length; c++) {
-                uniDOMs[row][c].innerHTML = pieceWise[c];
+				uniDOMs[row][c].innerHTML = pieceWise[c];
+				if (c > 0) {
+					uniDOMs[row][c].className = "default " + holidayColor + " " + holidayWeight;
+					uniDOMs[row][c].dataDate = `uni,${uniYear},${uniMonth},${uniDay}`;
+				}
             }
-            // Store next insert point.
+            // Increment Pointer
             row += 1;
             col = 1;
         } else {
             if (col == 1) {
                 uniDOMs[row][0].innerHTML = uniWeekNum;
             }
-            uniDOMs[row][col].innerHTML = uniDay;
+			uniDOMs[row][col].innerHTML = uniDay;
+			
+			// Store onclick values
+			uniDOMs[row][col].dataDate = `uni,${uniYear},${uniMonth},${uniDay}`;
+			
+			// Highlight Holidays
+			if (isHoliday("uni", uniYear, uniMonth, uniDay)) {
+				uniDOMs[row][col].className = "default " + holidayColor + " " + holidayWeight;
+			}
+			
+			// Increment Pointer
             col += 1;
             if (col > 7) {
                 col = 1;
@@ -252,28 +295,28 @@ function populateUniformCalendar(uniYear, uniMonth, uniDay, uniWeekday, uniWeekN
             UniformMonth.addUniformDay(uniYear, uniMonth, uniDay, 1);
     }
     
-    // Insert Numbers BACKWARD
+    //  ----------------- Insert Numbers BACKWARD ---------------------
     row = startRow;
     col = startCol;
     uniDayNum = startUniDayNum;
     uniYear = startUniYear;
     var {uniYear, uniMonth, uniDay} = UniformMonth.uniformDateFromUniYearDay(uniDayNum, uniYear);
-	while (row >= 0) {        
-        // Decrement Day
-        var {uniYear, uniMonth, uniDay, uniWeekday, uniWeekNum, uniDayNum} =
-        UniformMonth.subtractUniformDay(uniYear, uniMonth, uniDay, 1);
-
-        // On First Column, set Weeknum OR make whole week special
+	while (row >= 0) {
         if (uniMonth == 14 || uniDay == 0) {
+			// Free Day: Determine which string to print
             let pieceWise = pieceWiseLeap;
-            if (uniMonth == 14) {
+            if (uniMonth == 14 && uniDay == 1) {
                 pieceWise = pieceWiseYear;
             }
             // Print Piece-wise Message as entire row
             for (let c = 0; c < pieceWise.length; c++) {
-                uniDOMs[row][c].innerHTML = pieceWise[c];
+				uniDOMs[row][c].innerHTML = pieceWise[c];
+				if (c > 0) {
+					uniDOMs[row][c].className = "default " + holidayColor + " " + holidayWeight;
+					uniDOMs[row][c].dataDate = `uni,${uniYear},${uniMonth},${uniDay}`;
+				}
             }
-            // Store next insert point.
+            // Decrement Pointer
             row -= 1;
             col = 7;
         } else {
@@ -281,12 +324,41 @@ function populateUniformCalendar(uniYear, uniMonth, uniDay, uniWeekday, uniWeekN
                 uniDOMs[row][0].innerHTML = uniWeekNum;
             }
             uniDOMs[row][col].innerHTML = uniDay;
+			
+			// Store onclick values
+			uniDOMs[row][col].dataDate = `uni,${uniYear},${uniMonth},${uniDay}`;
+			
+			// Highlight Holidays
+			if (isHoliday("uni", uniYear, uniMonth, uniDay)) {
+				uniDOMs[row][col].className = "default " + holidayColor + " " + holidayWeight;
+			}
+			
+			// Decrement Pointer
             col -= 1;
             if (col === 0) {
                 col = 7;
                 row -= 1;
             }
         }
+        // Decrement Day
+        var {uniYear, uniMonth, uniDay, uniWeekday, uniWeekNum, uniDayNum} =
+        UniformMonth.subtractUniformDay(uniYear, uniMonth, uniDay, 1);
+	}
+	
+    // ----------------- Update Current Date -----------------
+    row = startRow;
+    col = startCol;
+    uniDayNum = startUniDayNum;
+    uniYear = startUniYear;
+    var {uniYear, uniMonth, uniDay} = UniformMonth.uniformDateFromUniYearDay(uniDayNum, uniYear);
+	if (uniMonth == 14 || uniDay == 0) {
+		for (let c = 1; c < 8; c++) {
+			uniDOMs[row][c].className = "success"; // highlight row
+		}
+	} else {
+		uniDOMs[row][col].className = "success";
+		uniWeekNum = (uniMonth - 1) * 4 + Math.floor((uniDay - 1) / 7) + 1;
+        uniDOMs[row][0].innerHTML = uniWeekNum; // set week number too
     }
 
 }
@@ -317,7 +389,153 @@ function getCalendarDoms() {
 	return {gregDOMs, uniDOMs};	
 }
 
+// isHoliday() returns as a string the name of the holiday on the date provided 
+// or |false| if the given date is a not holiday.
+function isHoliday(calendar, year, month, day) {
+	const greg = "greg";
+	const uni = "uni";
+	if (calendar === undefined || typeof(calendar) != "string") {
+		return false;
+	} else if (calendar[0].toLowerCase() === "g") {
+		calendar = greg;
+	} else if (calendar[0].toLowerCase() === "u") {
+		calendar = uni;
+	}
 
+	// Gregorian Dates:
+	if (calendar === greg) {
+		
+		// Test for Fixed-Date Holidays
+		let isFixedHoliday = false;
+		let testDates = [
+			[1,1,"New Year's Day"],
+			[7,4,"Independence Day"],
+			[12,24,"Christmas Eve"],
+			[12,25,"Christmas Day"],
+			[12,31,"New Year's Eve"],
+		];
+		testDates.forEach((x) => (x[0] === month && x[1] === day) ? isFixedHoliday = x[2] : false);
+		if (isFixedHoliday) {
+			return isFixedHoliday; // returns a string
+		} 
+
+		// Calculate "Monday" holidays
+		// [n'th monday, month of holiday] pairs.
+		let mlk = [3, 1, "MLK Jr Day: 3rd Mon of Jan"];
+		let pres = [3, 2, "Presidents Day: 3rd Mon of Feb"];
+		let mem = [-1, 5, "Memorial Day: Last Mon of May"];
+		let lab = [1, 9, "Labor Day: First Mon of Sept"];
+		let col = [2, 10, "Columbus Day: 2nd Mon of Oct"];
+		let vet = [4, 10, "Veterans Day: 4th Mon of Oct"];
+		let holidays = [mlk, pres, mem, lab, col, vet];
+		for (let i = 0; i < holidays.length; i++) {
+			// Skip if input month isn't the same as the holiday month
+			if (month !== holidays[i][1]) {
+				continue;
+			}
+			// Find the day of the month on the first monday of the month
+			let firstMonday; // a day of the month
+			let firstOfMonth = new Date (year, holidays[i][1] - 1, 1);
+			let weekdayOnFirst = firstOfMonth.getDay(); // weekday number [0-6]
+			// weekday: Sunday = 0, Monday = 1. 
+			if (weekdayOnFirst <= 1) {
+				firstMonday = 2 - weekdayOnFirst; // day of the month
+			} else {
+				firstMonday = 7 + 2 - weekdayOnFirst;
+			}
+			
+			// Get target day of the month.
+			let targetDay = firstMonday + 7 * (holidays[i][0] - 1);
+			// Adjust for "last monday of month trick"
+			if (holidays[i][0] == -1) {
+				targetDay = firstMonday + 7 * (4 - 1);
+				while (targetDay + 7 <= UniformMonth.oldMonths[month - 1][1]) {
+					targetDay += 7;
+				}
+			} 
+			// Test if input is this holiday
+			if (day === targetDay) {
+				return holidays[i][2]; // returns a string
+			}
+		}
+		// Calculate Thursday Holidays
+		let txg = [4, 11, "Thanksgiving: 4th Th of Nov"];
+		// Find the day of the month on the first monday of the month
+		let firstThursday; // a day of the month
+		let firstOfMonth = new Date (year, txg[1] - 1, 1);
+		let weekdayOnFirst = firstOfMonth.getDay(); // weekday number [0-6]
+		// weekday: Sunday = 0, Monday = 1. 
+		if (weekdayOnFirst <= 4) {
+			firstThursday = 5 - weekdayOnFirst; // day of the month
+		} else {
+			firstThursday = 7 + 5 - weekdayOnFirst;
+		}
+		let targetDay = firstThursday + 7 * (txg[0] - 1);
+		if (day === targetDay && month === txg[1]) {
+			return txg[2];
+		}
+
+		// Not a Gregorian Holiday
+		return false;
+	}
+	// Uniform Month Dates:
+	if (calendar === uni && UniformMonth.uniMonthNamesLabel == "Mid-Summer" && 
+		UniformMonth.leapDay == 183 && UniformMonth.daysLost == 10) {
+		let isHit = false;
+		let testDates = [
+			[1, 1, "New Year's Day"],
+			[1, 23, "MLK Jr Day"],
+			[3, 2, "Presidents Day"],
+			[6, 16, "Memorial Day"],
+			[7, 27, "Independence Day"],
+			[9 + 1, 2, "Labor Day"],
+			[10 + 1, 16, "Columbus Day"],
+			[11 + 1, 16, "Veterans Day"],
+			[11 + 1, 26, "Thanksgiving"],
+			[12 + 1, 22, "Christmas Eve"],
+			[12 + 1, 23, "Christmas Day"],
+		];
+		testDates.forEach( (x) => (x[0] === month && x[1] === day) ? isHit = x[2] : isHit = isHit);
+		if (isHit) {
+			return isHit;
+		}
+	}
+	return false;
+}
+
+function clickCalendar(mouseEvent) {
+	// let myDate = mouseEvent.target.getAttribute("dataDate");
+	let myDate = mouseEvent.target.dataDate;
+
+	let comma;
+	// Calendar
+	comma = myDate.indexOf(",");
+	let calendar = myDate.substring(0,comma);
+	myDate = myDate.substring(comma+1);
+	// Year
+	comma = myDate.indexOf(",");
+	let year = myDate.substring(0,comma) * 1;
+	myDate = myDate.substring(comma+1);
+	// Month
+	comma = myDate.indexOf(",");
+	let month = myDate.substring(0,comma) * 1;
+	myDate = myDate.substring(comma+1);
+	// Day
+	let day = myDate * 1;
+
+	// My Holiday
+	let myHoliday = isHoliday(calendar, year, month, day);
+	if (myHoliday) {
+		window.alert(myHoliday);
+	} else {
+		if (calendar === "greg") {
+			let tmpDate = new Date(year, month - 1, day);
+			window.alert(tmpDate.toDateString());
+		} else {
+			window.alert(`${year}-${month}-${day}`);
+		}
+	}
+}
 
 /* ----------  HTML Button Callbacks  --------  */
 
@@ -371,6 +589,7 @@ function yesterday() {
 
 function setupPage() {
 	// addEventListeners();
+	createEmptyCalendars();
 	populateMonthNameTable();
 	createConstants();
 	gregToUni();

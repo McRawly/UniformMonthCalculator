@@ -1,3 +1,6 @@
+/* 
+  testTable.js creates a hidden table in the last section of the HTML when called
+*/
 function testTable() {
     var gregYear = 2016;
     var gregMonth = 1;

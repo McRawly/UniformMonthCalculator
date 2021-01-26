@@ -13,6 +13,7 @@
 	<link href="./docs/bootstrap.min.css" rel="stylesheet">
 	<!-- CraftedCart StyleSheet -->
 	<link rel="stylesheet" type="text/css" href="./docs/CCStyle.css">
+	<style> body { color: #000 } </style>
 
 	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -62,56 +63,24 @@
 					
 					<!-- Calendar Style Readouts -->
 					<div class="row text-center">
-						<div class="container col-sm-6 col-6">
-							<table class="table" id="gregCalendar">
+						<div class="container col-xs-6">
+						<!-- <div class="container col-6 pull-right"> -->
+							<!-- <div class=" pull-left"> -->
+								<h3>13-Month Calendar</h3>
+								<h4><span id="resultOutputString">WWW, month d, yyyy</span></h4>
+								<table class="table" id="uniCalendar" >
+								</table>
+							<!-- </div> -->
+						</div>
+						<div class="container col-xs-6">
+							<!-- <div class="container pull-right"> -->
 								<h3>Gregorian Calendar</h3>
 								<h4><span id="resultInputString">WWW mmm dd yyyy</span></h4>
-								<tr>
-									<th class="info">Wk</th>
-									<th>Su</th>
-									<th>M</th>
-									<th>Tu</th>
-									<th>W</th>
-									<th>Th</th>
-									<th>Fr</th>
-									<th>Sa</th>
-								</tr>
-							</table>
+								<table class="table" id="gregCalendar">
+								</table>
+							<!-- </div> -->
 						</div>
-						<div class="container col-sm-6 col-6">
-							<h3>13-Month Calendar</h3>
-							<h4><span id="resultOutputString">WWW, month d, yyyy</span></h4>
-							<table class="table" id="uniCalendar" >
-								<tr>
-									<th class="info">Wk</th>
-									<th>Su</th>
-									<th>M</th>
-									<th>Tu</th>
-									<th>W</th>
-									<th>Th</th>
-									<th>Fr</th>
-									<th>Sa</th>
-								</tr>
-							</table>
-						</div>
-						<script>
-							let table1 = document.getElementById("gregCalendar");
-							let table2 = document.getElementById("uniCalendar");
-							const spread = 4;
-							const numRows = 1 + 2 * spread;
-							const numCols = 8;
-							let newInner = "";
-							for (let i = 0; i < numRows; i++) {
-								newInner += "<tr>";
-								newInner += "<td class=\"info\">#</td>";
-								for (let j = 1; j < numCols; j++) {
-									newInner += "<td>#</td>";
-								}
-								newInner += "</tr>";
-							}
-							table1.innerHTML += newInner;
-							table2.innerHTML += newInner;
-						</script>
+						
 					</div>
 
 				</div>
@@ -233,7 +202,6 @@
 					<h2>2016-2020 CE to Uniform Month</h2>
 					<p>1582 CE Gregorian Calendar Adopted
 						<br>46 BCE the Julian Year Adopted
-						<br>in the 6th century BCE (600-500 BCE) Jews started keeping track of years
 					</p>
 					<!-- Buttons: Print, Expand -->
 					<button type="button" class="btn btn-default " onclick="testTable()" id="printTable">Write Table</button>
@@ -257,15 +225,17 @@
 			<div class="fluid-container"><!-- fluid-container-->
 				<div class="container panel panel-default grePanel">
 					<h2>Gormanian, what's that?</h2>
-					<p>I'm going to guess that you don't watch Dave Gorman Modern Life is Goodish then.
-						The Gormanian calendar is a idea from <a href="https://www.youtube.com/watch?v=dHXz-UD8I4g">Series 3 Episode 7</a> of the Goodish show.
+					<p>
+						The Gormanian calendar is an idea from 
+						<a href="https://www.youtube.com/watch?v=dHXz-UD8I4g">Series 3 Episode 7</a> 
+						of Dave Gorman's "Modern Life is Goodish" show.
 						We know how many seconds are in a minute, how many minutes are in an hour,
 						how many hours are in a day, how many days there are in a week,
 						how many months there are in a year, but we don't know how many days or weeks there
-						are in a month. It changes each month. The Gormanian calendar solves this issue by
+						are in a month! It changes each month. The 13-month calendar solves this issue by
 						making each month 28 days long, as well as by adding another month and an intermission.
-						This calendar also renames and moves some months. (OCTober is the 10th month, not the
-						8th?)
+						This calendar also renames and moves some months. (e.g. OCTober should be the 8th month, 
+						not the 10th)
 					</p>
 				</div>
 			</div>
@@ -275,8 +245,8 @@
 		<script src="./docs/bootstrap.min.js"></script>
 		<script src="./docs/jquery.smoothState.js"></script>
 		<script src="./docs/transitionPage.js"></script>
-		<script src="./docs/uniformConvert.js"></script>
 		<script src="./docs/UniformMonth.js"></script>
+		<script src="./docs/uniformConvert.js"></script>
 		<script src="./docs/testTable.js"></script>
 		<script type="text/javascript">setupPage();</script>
 
